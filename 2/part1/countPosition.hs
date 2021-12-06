@@ -6,7 +6,7 @@ main = do
   let inputStrings = lines f
   let dirs = map words inputStrings
   let (horizontal, depth) = foldr (countPosition . inputToDirection) (0,0) dirs
-  let str = "The number of increases is: " ++ show (horizontal,depth)
+  let str = "The final placement is: " ++ show (horizontal,depth)
   print str
   print ("The final outcome then is: " ++ show (horizontal * depth))
 

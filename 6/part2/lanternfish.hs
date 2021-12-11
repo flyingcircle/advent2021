@@ -4,28 +4,29 @@ main :: IO ()
 main = do
   f <- readFile "../inputs.txt"
   let inputs = (concat . lines) f
-  let fish = (frequency . map read . wordsWhen (==',')) inputs
-  let pond = toList (fromListWith (+) (fish ++ emptyPond))
-  print ("Num of fish: " ++ show (length (simulateDays 256 pond)))
+  let fish = (map read . wordsWhen (==',')) inputs :: [Int]
+  let initFish = addFish fish emptyPond
+  print ("Fish: " ++ show (sum (foldl (\x _ -> simDay x) initFish [0..255])))
 
-emptyPond :: Map Integer Integer
-emptyPond = fromList [(x, 0) | x <- [0..8]]
+emptyPond :: [Int]
+emptyPond = replicate 10 0
 
-simulateDays :: Int -> [(Int,Int)] -> [(Int,Int)]
-simulateDays d f = if d == 0 then f else simulateDays (d-1) (simulateDay f)
+addFish :: [Int] -> [Int] -> [Int]
+addFish fs = zipWith (+) (map (`count` fs) [0..9])
 
-simulateDay :: [(Int,Int)] -> [(Int,Int)]
-simulateDay = map (\x -> x - 1) . replaceZeros . newFish
+simDay :: [Int] -> [Int]
+simDay = decrementFish . birthFish
 
-replaceZeros :: [(Int,Int)] -> [(Int,Int)]
+birthFish :: [Int] -> [Int]
+birthFish fs = zipWith (+) [if x == 7 || x == 9 then head fs else 0 | x <- [0..9]] fs
 
-newFish :: (Eq a, Num a) => [a] -> [a]
+decrementFish :: [Int] -> [Int]
+decrementFish (x:y:fs) = y : decrementFish (y:fs)
+decrementFish [y] = [0]
+decrementFish [] = []
 
-count   :: Eq a => a -> [a] -> Int
-count x =  length . filter (==x)
-
-frequency :: (Ord k, Num a) => [k] -> Map k a
-frequency xs = fromListWith (+) [(x, 1) | x <- xs]
+count :: Eq a => a -> [a] -> Int
+count x = length . filter (x==)
 
 wordsWhen :: (Char -> Bool) -> String -> [String]
 wordsWhen p s = case dropWhile p s of

@@ -11,8 +11,11 @@ main = do
   f <- readFile "../inputs.txt"
   let inputs = lines f
   let vents = (parseCoords . map words) inputs
-  let placedVents = frequency (concatMap calcCoords vents)
-  print ("Num of overlaps: " ++ show (countOverlap placedVents))
+  let placedVents = map (\x -> countOverlaps vents) [0..99]
+  print ("Num of overlaps: " ++ show placedVents)
+
+countOverlaps :: Foldable t => t Coords -> Int
+countOverlaps vs = (countOverlap . frequency) (concatMap calcCoords vs)
 
 parseCoords :: [[String]] -> [Coords]
 parseCoords = map parseCoord

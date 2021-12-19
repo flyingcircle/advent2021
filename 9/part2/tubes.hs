@@ -1,23 +1,25 @@
 import Data.Char (digitToInt, intToDigit)
 import Data.List (transpose)
+import Data.Set (Set,fromList,member,elemAt)
 
 main :: IO ()
 main = do
   f <- readFile "../test.txt"
   let inputs = (map (map digitToInt) . lines) f
-  print ("solution: " ++ show (map (map intToDigit) (transformToBasinMap inputs)))
+  print ("coords: " ++ show(transformToCoords inputs))
 
-transformToBasinMap :: [[Int]] -> [[Int]]
-transformToBasinMap = map (map (\x -> if x == 9 then 0 else 1))
+transformToCoords :: [[Int]] -> Set (Int,Int)
+transformToCoords is = fromList [(x,y) | x <- [0..4], y <- [0..9], ((is!!x)!!y) < 9]
 
-findLowPoints :: [[Int]] -> [Int]
-findLowPoints is = [is!!x!!y | x <- [0..99], y <- [0..99], isLowPoint is x y]
+getAdjCoords :: (Num a1, Num a2) => (a1, a2) -> [(a1, a2)]
+getAdjCoords (x,y) = [(x+1,y),(x-1,y),(x,y+1),(x,y-1)]
 
-isLowPoint :: [[Int]] -> Int -> Int -> Bool
-isLowPoint is x y = findLowHoriz (is!!x) y && findLowHoriz (transpose is !! y) x
+getBasins :: Set (Int,Int) -> [Set (Int,Int)]
+getBasins cs =  b : getBasins 
+  where 
+    c = elemAt 0 cs
+    b = getBasin c cs
 
-findLowHoriz :: [Int] -> Int -> Bool
-findLowHoriz is x
-  | x == (length is - 1) = is!!(x-1) > is!!x
-  | x == 0 = is!!(x+1) > is!!x
-  | otherwise = is!!(x-1) > is!!x && is!!(x+1) > is!!x
+
+getBasin :: (Ord a1, Ord a2, Num a1, Num a2) => (a1, a2) -> Set (a1, a2) -> Set (a1, a2)
+getBasin b c = fromList (filter (`member` c) (getAdjCoords b))
